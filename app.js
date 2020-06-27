@@ -5,12 +5,29 @@ const prevAndNextContainer = document.querySelector('#prev-and-next-container')
 
 const apiURL = `https://api.lyrics.ovh`
 
-const insertSongsIntoPage = songsInfo => {
-  console.log(songsInfo.data.map(song => `<li>${song.title}</li>`))
+const getMoreSongs = async url => {
+  const response = await fetch(`https://cors-anywhere.herokuapp.com/${url}`)
+  const data = await response.json()
 
-  // songsContainer.innerHTML = songsInfo.data.map(song => `
-  //   <li>${song.title}</li>
-  //   `)
+  insertSongsIntoPage(data)
+}
+
+const insertSongsIntoPage = songsInfo => {
+  songsContainer.innerHTML = songsInfo.data.map(song => `
+    <li class="song">
+    <span class="song-artist"><strong>${song.artist.name}</strong> - ${song.title}</span>
+    <button class="btn" data-artist="${song.artist.name}" data-song-title="${song.title}">Ver letra</button>
+    </li>
+    `).join('')
+
+  if (songsInfo.prev || songsInfo.next) {
+    prevAndNextContainer.innerHTML = `
+    ${songsInfo.prev ? `<button class="btn" onClick="getMoreSongs('${songsInfo.prev}')">anteriores</buton>` : ''}
+    ${songsInfo.next ? `<button class="btn" onClick="getMoreSongs('${songsInfo.next}')">próximas</buton>` : ''}
+    `
+    return
+  }
+  prevAndNextContainer.innerHTML= ''
 }
 const fetchSongs = async term => {
   const response = await fetch(`${apiURL}/suggest/${term}`)
